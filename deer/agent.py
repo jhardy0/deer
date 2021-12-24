@@ -268,7 +268,7 @@ class NeuralAgent(object):
             maximum number of steps for a given epoch
         """
         if(self._mode==-1):
-            return self._run_train(n_epochs, epoch_length)
+            self._run_train(n_epochs, epoch_length)
         else:
             self._run_non_train(n_epochs, epoch_length)
             
@@ -301,7 +301,7 @@ class NeuralAgent(object):
         self._environment.end()
         for c in self._controllers: c.onEnd(self)
 
-        return [self._learning_algo.qValues([self._state_value[i]]) for i in range(10)]
+        # return [self._learning_algo.qValues([self._state_to_transform[i]]) for i in range(10)]
 
     def _run_non_train(self, n_epochs, epoch_length):
         """

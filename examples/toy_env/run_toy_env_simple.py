@@ -59,7 +59,7 @@ start_time = time.time()
 n_epochs = 10
 epoch_length = 1000
 # --- Run the experiment ---
-q_values = agent.run(n_epochs=n_epochs, epoch_length=epoch_length)
+agent.run(n_epochs=n_epochs, epoch_length=epoch_length)
 
 total_time = time.time() - start_time
 hrs = int(total_time / (60 * 60))
@@ -69,11 +69,19 @@ sec = int(total_time % 60 % (60*60))
 print(f'\nFinished training after {hrs}h:{mins}m:{sec}s\n')
 print('Q-values:\n')
 
-action_a = [q_values([state])[0] for state in range(10)]
-action_b = [q_values([state])[1] for state in range(10)]
+n_states = 10
+states_transformed = [2*i/(n_states-1) - 1 for i in range(n_states)]
+
+q_values = [ qnetwork.qValues([states_transformed[i]]) for i in range(n_states) ]
+
+action_a = [q_values[state][0] for state in range(10)]
+action_b = [q_values[state][1] for state in range(10)]
+
+print(action_a)
+print(action_b)
 
 np.savetxt('action_a.txt', np.array(action_a))
 np.savetxt('action_b.txt', np.array(action_b))
 
-for state in range(10):
-    print(f'state {state+1} = {qnetwork.qValues([state])}')
+# for state in range(10):
+#     print(f'state {state+1} = {qnetwork.qValues([state])}')
