@@ -50,12 +50,12 @@ class NeuralAgent(object):
 
     def __init__(self, environment, learning_algo, replay_memory_size=1000000, replay_start_size=None, batch_size=32, random_state=np.random.RandomState(), exp_priority=0, train_policy=None, test_policy=None, only_full_history=True):
         inputDims = environment.inputDimensions()
-        
+
         if replay_start_size == None:
             replay_start_size = max(inputDims[i][0] for i in range(len(inputDims)))
         elif replay_start_size < max(inputDims[i][0] for i in range(len(inputDims))) :
             raise AgentError("Replay_start_size should be greater than the biggest history of a state.")
-        
+
         self._controllers = []
         self._environment = environment
         self._learning_algo = learning_algo
@@ -87,6 +87,7 @@ class NeuralAgent(object):
             self._test_policy = test_policy
         self.gathering_data=True    # Whether the agent is gathering data or not
         self.sticky_action=1        # Number of times the agent is forced to take the same action as part of one actual time step
+        # self.qval_over_time = []
 
     def setControllersActive(self, toDisable, active):
         """ Activate controller
@@ -267,7 +268,7 @@ class NeuralAgent(object):
             maximum number of steps for a given epoch
         """
         if(self._mode==-1):
-            self._run_train(n_epochs, epoch_length)
+            return self._run_train(n_epochs, epoch_length)
         else:
             self._run_non_train(n_epochs, epoch_length)
             
@@ -293,11 +294,14 @@ class NeuralAgent(object):
             self._training_loss_averages = []
             while nbr_steps_left > 0: # run new episodes until the number of steps left for the epoch has reached 0
                 nbr_steps_left = self._runEpisode(nbr_steps_left)
+                # self.qval_over_time.append(copy.deepcopy([self._learning_algo.qValues([state]) for state in range(10)]))
             i += 1
             for c in self._controllers: c.onEpochEnd(self)
             
         self._environment.end()
         for c in self._controllers: c.onEnd(self)
+
+        return [self._learning_algo.qValues([self._state_value[i]]) for i in range(10)]
 
     def _run_non_train(self, n_epochs, epoch_length):
         """
@@ -348,7 +352,7 @@ class NeuralAgent(object):
             maxSteps -= 1
             if(self.gathering_data==True or self._mode!=-1):
                 obs = self._environment.observe()
-                
+
                 for i in range(len(obs)):
                     self._state[i][0:-1] = self._state[i][1:]
                     self._state[i][-1] = obs[i]
